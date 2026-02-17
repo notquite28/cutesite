@@ -1,388 +1,601 @@
 ---
-import DesktopIcon from './DesktopIcon.astro';
-import DarkModeToggle from './DarkModeToggle.astro';
-import Window from './Window.astro';
-import CherryBlossoms from './CherryBlossoms.astro';
-import { Image } from 'astro:assets';
-import { userName, currentYear } from '../utils/siteConfig';
+import ThemeToggle from './ui/ThemeToggle.astro'
+import DesktopIcon from './ui/DesktopIcon.astro'
+import CherryBlossoms from './features/CherryBlossoms.astro'
+import WindowContent from './WindowContent.astro'
+import { USER_NAME, CURRENT_YEAR, SOCIAL_LINKS, USER_EMAIL } from '../lib/constants'
+import { Image } from 'astro:assets'
 
-// Greeting logic based on current hour
-const hour = new Date().getHours();
-let jpGreeting = 'こんにちは！'; // Default: Konnichiwa
-if (hour < 5) jpGreeting = 'こんばんは！'; // Konbanwa (Good evening/night)
-else if (hour < 11) jpGreeting = 'おはよう！'; // Ohayou (Good morning)
-else if (hour >= 18) jpGreeting = 'こんばんは！'; // Konbanwa (Good evening)
-
-const base = import.meta.env.BASE_URL ?? '/';
+const base = import.meta.env.BASE_URL ?? '/'
 ---
 
-<div class="flex flex-col h-screen relative bg-background dark:bg-background-dark">
-  <!-- Decorations - both sakura and lily -->
-  <div class="sakura-decoration">
-    <Image src={`${base}images/sakura.webp`} alt="Sakura branch decoration" width={400} height={300} />
-  </div>
-
-  <div class="lily-decoration hidden">
-    <Image src={`${base}images/lily.webp`} alt="Lily decoration 1" class="lily-1" width={300} height={200} />
-    <Image src={`${base}images/lily.webp`} alt="Lily decoration 2" class="lily-2" width={250} height={180} />
-  </div>
-
-  <!-- Cherry blossoms animation -->
+<div class="desktop">
   <CherryBlossoms />
-
-  <!-- Top bar with controls -->
-  <div class="absolute top-2.5 left-2.5 z-10">
-    <DarkModeToggle />
+  
+  <div class="decorations">
+    <div class="sakura-decoration">
+      <Image src={`${base}images/sakura.webp`} alt="Sakura decoration" width={400} height={300} />
+    </div>
+    <div class="lily-decoration hidden">
+      <Image src={`${base}images/lily.webp`} alt="Lily decoration" width={300} height={200} class="lily-1" />
+      <Image src={`${base}images/lily.webp`} alt="Lily decoration" width={250} height={180} class="lily-2" />
+    </div>
   </div>
 
-  <!-- Main desktop area -->
-  <div class="flex-1 flex flex-col justify-center items-center p-5">
-    <!-- Desktop area is now empty as icons are moved to the home window -->
+  <div class="controls">
+    <ThemeToggle />
   </div>
 
-  <!-- Windows container (windows will be created dynamically) -->
-  <div id="windows-container" class="absolute top-0 left-0 w-full h-full pointer-events-none" role="presentation" aria-hidden="true"></div>
+  <div class="desktop-content">
+    <div class="home-window" id="home-window">
+      <header class="home-header">
+        <span id="greeting" class="greeting" lang="ja">こんにちは！</span>
+      </header>
+      <div class="icon-grid">
+        <DesktopIcon id="about" name="about" />
+        <DesktopIcon id="links" name="links" />
+        <DesktopIcon id="work" name="work" />
+        <DesktopIcon id="faq" name="faq" />
+      </div>
+    </div>
+  </div>
 
-  <!-- Lain video background for secret mode -->
+  <p class="konami-hint">Hint: try the Konami code</p>
+
+  <div id="windows-container" class="windows-container"></div>
+
+  <div id="konami-controller" class="konami-controller hidden">
+    <div class="controller-header">
+      <h3>Controller</h3>
+      <button id="controller-close" aria-label="Close controller">×</button>
+    </div>
+    <div class="controller-body">
+      <div class="sequence-progress">
+        <span class="dot" data-index="0"></span>
+        <span class="dot" data-index="1"></span>
+        <span class="dot" data-index="2"></span>
+        <span class="dot" data-index="3"></span>
+        <span class="dot" data-index="4"></span>
+        <span class="dot" data-index="5"></span>
+        <span class="dot" data-index="6"></span>
+        <span class="dot" data-index="7"></span>
+        <span class="dot" data-index="8"></span>
+        <span class="dot" data-index="9"></span>
+      </div>
+      <jpad-controller>
+        <div class="dpad">
+          <jpad-button id="btn-up" name="up" keys="ArrowUp">↑</jpad-button>
+          <jpad-button id="btn-down" name="down" keys="ArrowDown">↓</jpad-button>
+          <jpad-button id="btn-left" name="left" keys="ArrowLeft">←</jpad-button>
+          <jpad-button id="btn-right" name="right" keys="ArrowRight">→</jpad-button>
+        </div>
+        <div class="action-buttons">
+          <jpad-button id="btn-b" name="b" keys="KeyB">B</jpad-button>
+          <jpad-button id="btn-a" name="a" keys="KeyA">A</jpad-button>
+        </div>
+      </jpad-controller>
+    </div>
+  </div>
+
+  <WindowContent />
+
+<script>
+  import { $windows, $sortedWindows, $activeWindowId, openWindow, closeWindow } from '../stores/windows'
+  import { renderWindow } from '../lib/windowRenderer'
+  import 'jpad-components'
+
+  function createWindowEl(state: { id: string; title: string; position: { x: number; y: number }; size: { width: number; height: number }; zIndex: number; isLoading: boolean }): HTMLElement {
+    const el = document.createElement('div')
+    el.className = 'window'
+    el.dataset.windowId = state.id
+    el.style.cssText = `left: ${state.position.x}px; top: ${state.position.y}px; width: ${state.size.width}px; height: ${state.size.height}px; z-index: ${state.zIndex};`
+    
+    el.innerHTML = `
+      <header class="window-header" data-drag-handle>
+        <span class="window-title">${state.title}</span>
+        <button class="window-close" aria-label="Close ${state.title}" data-close>×</button>
+      </header>
+      <main class="window-content"></main>
+    `
+    
+    requestAnimationFrame(() => {
+      el.classList.add('is-open')
+      renderWindow(state.id, el)
+    })
+    
+    return el
+  }
+
+  function syncWindows(): void {
+    const container = document.getElementById('windows-container')
+    if (!container) return
+
+    const windows = $sortedWindows.get()
+    const activeId = $activeWindowId.get()
+    const existingEls = new Map<string, HTMLElement>()
+    
+    container.querySelectorAll('.window').forEach(el => {
+      const id = (el as HTMLElement).dataset.windowId
+      if (id) existingEls.set(id, el as HTMLElement)
+    })
+
+    const currentIds = new Set(windows.map(w => w.id))
+    
+    existingEls.forEach((el, id) => {
+      if (!currentIds.has(id)) {
+        el.remove()
+      }
+    })
+
+    windows.forEach(state => {
+      let el = existingEls.get(state.id)
+      
+      if (!el) {
+        el = createWindowEl(state)
+        container.appendChild(el)
+      } else {
+        el.style.left = `${state.position.x}px`
+        el.style.top = `${state.position.y}px`
+        el.style.zIndex = String(state.zIndex)
+        el.classList.toggle('is-active', state.id === activeId)
+      }
+    })
+  }
+
+  function initKonamiCode(): void {
+    const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA']
+    let konamiIndex = 0
+
+    function updateSequenceDots(): void {
+      const dots = document.querySelectorAll('#konami-controller .dot')
+      dots.forEach((dot, i) => {
+        if (i < konamiIndex) {
+          dot.classList.add('active')
+        } else {
+          dot.classList.remove('active')
+        }
+      })
+    }
+
+    function triggerAutism(): void {
+      document.body.classList.add('konami-activated')
+      setTimeout(() => {
+        document.body.classList.remove('konami-activated')
+      }, 500)
+      
+      openWindow('autism')
+      hideController()
+      konamiIndex = 0
+      updateSequenceDots()
+    }
+
+    function handleKonamiInput(key: string): void {
+      const expectedKey = konamiCode[konamiIndex]
+      
+      if (key === expectedKey) {
+        konamiIndex++
+        updateSequenceDots()
+        
+        if (konamiIndex === konamiCode.length) {
+          setTimeout(triggerAutism, 300)
+        }
+      } else {
+        konamiIndex = 0
+        updateSequenceDots()
+      }
+    }
+
+    function handleKeyDown(e: KeyboardEvent): void {
+      handleKonamiInput(e.code)
+    }
+
+    function showController(): void {
+      const controller = document.getElementById('konami-controller')
+      controller?.classList.remove('hidden')
+      konamiIndex = 0
+      updateSequenceDots()
+    }
+
+    function hideController(): void {
+      const controller = document.getElementById('konami-controller')
+      controller?.classList.add('hidden')
+      konamiIndex = 0
+      updateSequenceDots()
+    }
+
+    function initControllerButtons(): void {
+      const buttons = [
+        { id: 'btn-up', key: 'ArrowUp' },
+        { id: 'btn-down', key: 'ArrowDown' },
+        { id: 'btn-left', key: 'ArrowLeft' },
+        { id: 'btn-right', key: 'ArrowRight' },
+        { id: 'btn-a', key: 'KeyA' },
+        { id: 'btn-b', key: 'KeyB' },
+      ]
+
+      buttons.forEach(({ id, key }) => {
+        const btn = document.getElementById(id)
+        btn?.addEventListener('click', () => handleKonamiInput(key))
+      })
+
+      document.getElementById('controller-close')?.addEventListener('click', hideController)
+    }
+
+    function setupControllerTrigger(): void {
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'childList') {
+            const triggerPanel = document.getElementById('controller-trigger-panel')
+            if (triggerPanel && !triggerPanel.hasAttribute('data-initialized')) {
+              triggerPanel.addEventListener('click', () => {
+                closeWindow('faq')
+                setTimeout(showController, 350)
+              })
+              triggerPanel.setAttribute('data-initialized', 'true')
+            }
+          }
+        })
+      })
+
+      observer.observe(document.body, { childList: true, subtree: true })
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    initControllerButtons()
+    setupControllerTrigger()
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    $windows.subscribe(syncWindows)
+    $activeWindowId.subscribe(syncWindows)
+    initKonamiCode()
+    updateGreeting()
+  })
+
+  function updateGreeting(): void {
+    const greetingEl = document.getElementById('greeting')
+    if (!greetingEl) return
+    
+    const hour = new Date().getHours()
+    const isNight = hour >= 18 || hour < 6
+    greetingEl.textContent = isNight ? 'こんばんわ！' : 'こんにちは！'
+  }
+</script>
+
   <video
     id="lain-bg-video"
     autoplay
     loop
     muted
     playsinline
-    class="fixed top-0 left-0 w-full h-full object-cover z-0 hidden"
-    style="pointer-events: none;"
+    class="lain-video hidden"
   >
     <source src={`${base}images/lain.webm`} type="video/webm" />
   </video>
 
-  <!-- Hidden controller for Konami code (initially hidden) -->
-  <div id="konami-controller" class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black p-4 rounded-lg shadow-lg z-50 w-80 border-2 border-red-600" role="dialog" aria-modal="true" aria-label="Konami Code Controller">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-lg font-bold text-red-500" id="controller-title">Controller</h2>
-      <button id="controller-close" class="text-red-500 hover:text-red-300" aria-label="Close controller">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-        </svg>
-      </button>
-    </div>
-
-    <div class="flex flex-col items-center">
-      <div class="w-32 h-32 rounded-full overflow-hidden mb-4 border-2 border-red-600">
-        <video
-          src={`${base}images/glitch.webm`}
-          autoplay
-          loop
-          muted
-          playsinline
-          class="w-full h-full object-cover"
-          width="128" height="128"
-        ></video>
-      </div>
-
-      <div id="sequence-dots" class="flex justify-center space-x-1 mb-4" aria-label="Konami code sequence progress">
-        <div class="w-2 h-2 rounded-full bg-red-900"></div>
-        <div class="w-2 h-2 rounded-full bg-red-900"></div>
-        <div class="w-2 h-2 rounded-full bg-red-900"></div>
-        <div class="w-2 h-2 rounded-full bg-red-900"></div>
-        <div class="w-2 h-2 rounded-full bg-red-900"></div>
-        <div class="w-2 h-2 rounded-full bg-red-900"></div>
-        <div class="w-2 h-2 rounded-full bg-red-900"></div>
-        <div class="w-2 h-2 rounded-full bg-red-900"></div>
-        <div class="w-2 h-2 rounded-full bg-red-900"></div>
-        <div class="w-2 h-2 rounded-full bg-red-900"></div>
-      </div>
-
-      <div class="controller-buttons w-full" role="group" aria-label="Controller buttons">
-        <!-- D-pad -->
-        <div class="grid grid-cols-3 gap-2 mb-4">
-          <div></div>
-          <button id="btn-up" class="bg-red-900 text-red-100 p-2 rounded hover:bg-red-700" aria-label="Up">↑</button>
-          <div></div>
-          <button id="btn-left" class="bg-red-900 text-red-100 p-2 rounded hover:bg-red-700" aria-label="Left">←</button>
-          <div></div>
-          <button id="btn-right" class="bg-red-900 text-red-100 p-2 rounded hover:bg-red-700" aria-label="Right">→</button>
-          <div></div>
-          <button id="btn-down" class="bg-red-900 text-red-100 p-2 rounded hover:bg-red-700" aria-label="Down">↓</button>
-          <div></div>
-        </div>
-
-        <!-- A/B buttons -->
-        <div class="flex justify-center space-x-4">
-          <button id="btn-b" class="bg-black text-red-500 w-12 h-12 rounded-full hover:bg-gray-900 border-2 border-red-600" aria-label="B button">B</button>
-          <button id="btn-a" class="bg-red-900 text-red-100 w-12 h-12 rounded-full hover:bg-red-700" aria-label="A button">A</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Footer -->
-  <div class="absolute bottom-0 left-0 w-full p-4 flex flex-col items-center">
-    <div class="text-sm text-text dark:text-text-dark opacity-80 z-10">&copy; {currentYear} {userName}</div>
-  </div>
+  <footer class="footer">
+    <span class="copyright">&copy; {CURRENT_YEAR} {USER_NAME}</span>
+  </footer>
 </div>
 
-<!-- Home window (visible on load) -->
-<Window id="home" title="Home">
-  <div class="flex flex-col items-center mb-6">
-    <span class="text-3xl font-semibold" lang="ja" title="Greeting" style="color: var(--text-color);">{jpGreeting}</span>
-  </div>
-  <div class="desktop-icons grid grid-cols-2 gap-12">
-    <DesktopIcon id="about" name="about" />
-    <DesktopIcon id="links" name="links" />
-    <DesktopIcon id="work" name="work" />
-    <DesktopIcon id="faq" name="faq" />
-  </div>
-</Window>
-
-<!-- Window template for dynamic content -->
-<template id="window-template">
-  <Window id="" title="" isTemplate={true} />
-</template>
-
-<script>
-  import { initIcons } from '../utils/iconManager';
-  import { repositionWindows, getBasePath, openWindow, closeWindow } from '../utils/windowManager';
-  import { initTouchSupport } from '../utils/touchSupport';
-  import { initAudio, playSound } from '../utils/audioManager';
-
-  // Initialize dark mode state
-  let isDarkMode: boolean = false;
-
-  // Check for saved preference
-  const savedDarkMode = localStorage.getItem('darkMode');
-  if (savedDarkMode !== null) {
-    isDarkMode = savedDarkMode === 'true';
-  } else {
-    // Default to user's system preference
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    isDarkMode = prefersDark;
-    localStorage.setItem('darkMode', String(prefersDark));
+<style>
+  .desktop {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: relative;
+    background-color: var(--window-bg);
   }
 
-  // Apply dark mode class if needed
-  if (isDarkMode) {
-    document.documentElement.classList.add('dark');
-  } else {
-    document.documentElement.classList.remove('dark');
+  .decorations {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
   }
 
-  // Initialize when DOM is loaded
-  document.addEventListener('DOMContentLoaded', () => {
-    initIcons();
-    initTouchSupport();
-    initAudio(); // Initialize audio functionality
+  .sakura-decoration {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    max-width: 400px;
+    max-height: 400px;
+    opacity: 0.9;
+    transform-origin: bottom left;
+    animation: float 8s ease-in-out infinite;
+  }
 
-    // Position windows in the center initially
-    window.addEventListener('resize', repositionWindows);
+  .sakura-decoration img {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+  }
 
-    // Show home window on load
-    const homeWindow = document.getElementById('home-window');
-    if (homeWindow) {
-      setTimeout(() => {
-        homeWindow.classList.add('active');
-        // Set a base z-index for the home window
-        // Other windows will appear in front of it
-        homeWindow.style.zIndex = '5';
+  :global(.dark) .sakura-decoration img {
+    filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.3)) brightness(0.9);
+  }
 
-        // Ensure home window title bar has solid background color
-        const homeTitleBar = homeWindow.querySelector('.bg-secondary') as HTMLElement;
-        if (homeTitleBar) {
-          homeTitleBar.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--window-title-bg');
-        }
-      }, 300);
+  .lily-decoration {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .lily-1 {
+    position: absolute;
+    bottom: -20px;
+    left: -20px;
+    width: 300px;
+    transform: scale(1.2) rotate(-5deg);
+    animation: float 8s ease-in-out infinite;
+  }
+
+  .lily-2 {
+    position: absolute;
+    bottom: -10px;
+    left: 120px;
+    width: 250px;
+    transform: scale(0.9) rotate(8deg);
+    animation: float 10s ease-in-out infinite reverse;
+    z-index: 2;
+  }
+
+  :global(.dark) .lily-1,
+  :global(.dark) .lily-2 {
+    filter: brightness(0.7) hue-rotate(30deg);
+  }
+
+  .controls {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 100;
+  }
+
+  .desktop-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    z-index: 10;
+  }
+
+  .home-window {
+    background-color: var(--window-content-bg);
+    border: 3px solid var(--window-title-bg);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: var(--window-shadow);
+    z-index: 5;
+  }
+
+  .home-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .greeting {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  .icon-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    justify-items: center;
+  }
+
+  .windows-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  .lain-video {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+    z-index: 10;
+  }
+
+  .copyright {
+    font-size: 0.875rem;
+    color: var(--text-color);
+    opacity: 0.8;
+  }
+
+  .konami-hint {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    color: var(--text-color);
+    opacity: 0.4;
+    z-index: 5;
+  }
+
+  .konami-controller {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 3px solid #e94560;
+    border-radius: 15px;
+    padding: 1.5rem;
+    z-index: 1000;
+    box-shadow: 0 0 30px rgba(233, 69, 96, 0.3);
+    min-width: 280px;
+  }
+
+  .konami-controller.hidden {
+    display: none;
+  }
+
+  .controller-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e94560;
+  }
+
+  .controller-header h3 {
+    color: #e94560;
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .controller-header button {
+    background: transparent;
+    border: none;
+    color: #e94560;
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .controller-header button:hover {
+    color: #ff6b6b;
+  }
+
+  .sequence-progress {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .sequence-progress .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #333;
+    border: 2px solid #e94560;
+    transition: all 0.2s ease;
+  }
+
+  .sequence-progress .dot.active {
+    background: #e94560;
+    box-shadow: 0 0 10px #e94560;
+  }
+
+  .controller-body jpad-controller {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .dpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 0.25rem;
+    width: 120px;
+  }
+
+  .dpad jpad-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #0f3460;
+    border: 2px solid #e94560;
+    color: #e94560;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+
+  .dpad jpad-button:hover {
+    background: #e94560;
+    color: #1a1a2e;
+  }
+
+  .dpad jpad-button:nth-child(1) { grid-column: 2; grid-row: 1; }
+  .dpad jpad-button:nth-child(2) { grid-column: 2; grid-row: 3; }
+  .dpad jpad-button:nth-child(3) { grid-column: 1; grid-row: 2; }
+  .dpad jpad-button:nth-child(4) { grid-column: 3; grid-row: 2; }
+
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .action-buttons jpad-button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 1.25rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .action-buttons jpad-button#btn-b {
+    background: #1a1a2e;
+    border: 3px solid #e94560;
+    color: #e94560;
+  }
+
+  .action-buttons jpad-button#btn-a {
+    background: #e94560;
+    border: 3px solid #ff6b6b;
+    color: #1a1a2e;
+  }
+
+  .action-buttons jpad-button:hover {
+    transform: scale(1.1);
+  }
+
+  @media (max-width: 640px) {
+    .home-window {
+      padding: 1.5rem;
     }
 
-    // Konami code implementation
-    function initKonamiCode() {
-      // Konami code sequence: ↑ ↑ ↓ ↓ ← → ← → B A
-      const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
-      let konamiIndex = 0;
-
-      // Controller variables
-      let controllerVisible = false;
-
-      // Helper function to open the autism window
-      function crashOut() {
-        // Reset the index
-        konamiIndex = 0;
-
-        // Hide controller if it's visible
-        if (controllerVisible) {
-          // Hide controller but don't remove Lain background
-          const controller = document.getElementById('konami-controller');
-          if (controller) {
-            controller.classList.add('hidden');
-            controllerVisible = false;
-            konamiIndex = 0;
-            // Note: We intentionally don't remove the lain-background class here
-          }
-        }
-
-        // Play glitch sound effect on crashOut (Konami code success)
-        playSound('glitch');
-
-        // Open the autism window
-        openWindow('autism');
-        // Play window open sound
-        playSound('windowOpen');
-
-        // Add a special effect
-        const body = document.querySelector('body');
-        if (body) {
-          body.classList.add('konami-activated');
-
-          // Ensure Lain background is applied
-          // setBackground('lain');
-
-          // Flash effect
-          setTimeout(() => {
-            body.classList.remove('konami-activated');
-          }, 1000);
-        }
-      }
-
-      // Controller functions
-      function showController() {
-        const controller = document.getElementById('konami-controller');
-        if (controller) {
-          controller.classList.remove('hidden');
-          controllerVisible = true;
-          resetSequenceDots();
-
-          // Add Lain background when controller is shown
-          // setBackground('lain');
-
-          // Toggle decorations
-          // setDecoration('lily');
-        }
-      }
-
-      function hideController() {
-        const controller = document.getElementById('konami-controller');
-        if (controller) {
-          controller.classList.add('hidden');
-          controllerVisible = false;
-          konamiIndex = 0;
-          // Remove Lain background when controller is hidden
-          // setBackground('default');
-          // Check if autism window is open before toggling decorations back
-          const autismWindow = document.querySelector('.window[data-window-id="autism"]');
-          if (!autismWindow) {
-            // setDecoration('sakura');
-          }
-          // Use modular getBasePath() for redirect
-          window.location.assign(window.location.origin + getBasePath());
-        }
-      }
-
-      // Helper function to update sequence dots
-      function updateSequenceDots() {
-        const dots = document.querySelectorAll('#sequence-dots div');
-        for (let i = 0; i < dots.length; i++) {
-          if (i < konamiIndex) {
-            dots[i].classList.remove('bg-red-900');
-            dots[i].classList.add('bg-red-500');
-          } else {
-            dots[i].classList.remove('bg-red-500');
-            dots[i].classList.add('bg-red-900');
-          }
-        }
-      }
-
-      // Helper function to reset sequence dots
-      function resetSequenceDots() {
-        const dots = document.querySelectorAll('#sequence-dots div');
-        dots.forEach(dot => {
-          dot.classList.remove('bg-red-500');
-          dot.classList.add('bg-red-900');
-        });
-        konamiIndex = 0;
-      }
-
-      // Initialize controller buttons
-      function initControllerButtons() {
-        // D-pad buttons
-        document.getElementById('btn-up')?.addEventListener('click', () => handleControllerButton('ArrowUp'));
-        document.getElementById('btn-down')?.addEventListener('click', () => handleControllerButton('ArrowDown'));
-        document.getElementById('btn-left')?.addEventListener('click', () => handleControllerButton('ArrowLeft'));
-        document.getElementById('btn-right')?.addEventListener('click', () => handleControllerButton('ArrowRight'));
-
-        // A/B buttons
-        document.getElementById('btn-a')?.addEventListener('click', () => handleControllerButton('a'));
-        document.getElementById('btn-b')?.addEventListener('click', () => handleControllerButton('b'));
-
-        // Close button
-        document.getElementById('controller-close')?.addEventListener('click', hideController);
-      }
-
-      function handleControllerButton(key: string) {
-        // Check if the key matches the expected key in the sequence
-        const expectedKey = konamiCode[konamiIndex];
-
-        if (key.toLowerCase() === expectedKey.toLowerCase()) {
-          // Move to the next key in the sequence
-          konamiIndex++;
-          updateSequenceDots();
-
-          // If the entire sequence is entered correctly
-          if (konamiIndex === konamiCode.length) {
-            // Add a small delay so user can see the completed sequence
-            setTimeout(() => {
-              crashOut();
-            }, 500);
-          }
-        } else {
-          // Reset the sequence if a wrong key is pressed
-          konamiIndex = 0;
-          updateSequenceDots();
-        }
-      }
-
-      // Setup controller trigger
-      function setupControllerTrigger() {
-        // Set up a mutation observer to watch for the controller trigger panel
-        const observer = new MutationObserver((mutations) => {
-          mutations.forEach((mutation) => {
-            if (mutation.type === 'childList') {
-              const triggerPanel = document.getElementById('controller-trigger-panel');
-              if (triggerPanel && !triggerPanel.hasAttribute('data-controller-initialized')) {
-                triggerPanel.addEventListener('click', () => {
-                  // First close the FAQ window
-                  closeWindow('faq');
-
-                  // Play glitch sound
-                  playSound('glitch');
-
-                  // Then show the controller after a short delay
-                  setTimeout(() => {
-                    showController();
-                  }, 350); // Slightly longer than the window closing animation (300ms)
-                });
-                triggerPanel.setAttribute('data-controller-initialized', 'true');
-                triggerPanel.style.cursor = 'pointer';
-                console.log('Controller trigger panel initialized');
-              }
-            }
-          });
-        });
-
-        // Start observing the document body for changes
-        observer.observe(document.body, { childList: true, subtree: true });
-      }
-
-      // Initialize controller buttons when DOM is loaded
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-          initControllerButtons();
-          setupControllerTrigger();
-        });
-      } else {
-        initControllerButtons();
-        setupControllerTrigger();
-      }
+    .greeting {
+      font-size: 1.25rem;
     }
 
-    initKonamiCode();
-  });
-</script>
+    .sakura-decoration {
+      max-width: 250px;
+      transform: scale(0.6);
+    }
+  }
+</style>

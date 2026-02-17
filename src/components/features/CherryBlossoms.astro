@@ -1,0 +1,74 @@
+---
+const PETAL_COUNT = 15
+---
+
+<div class="cherry-blossoms" aria-hidden="true">
+  {Array.from({ length: PETAL_COUNT }, (_, i) => (
+    <div class={`petal petal-${(i % 5) + 1}`} style={`--delay: ${Math.random() * 5}s; --x-start: ${Math.random() * 100}vw;`}></div>
+  ))}
+</div>
+
+<style>
+  .cherry-blossoms {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
+    overflow: hidden;
+  }
+
+  .petal {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    background-color: #fcd1d7;
+    border-radius: 150% 0 150% 0;
+    opacity: 0.8;
+    left: var(--x-start, 0);
+    animation: fall 10s linear infinite;
+    animation-delay: var(--delay, 0s);
+  }
+
+  .petal-1 { background-color: #fcd1d7; }
+  .petal-2 { background-color: #e9b1cd; width: 12px; height: 12px; }
+  .petal-3 { background-color: #fce1e7; width: 10px; height: 10px; }
+  .petal-4 { background-color: #f9c0cb; width: 14px; height: 14px; }
+  .petal-5 { background-color: #f5a8b9; width: 11px; height: 11px; }
+
+  :global(.dark) .petal-1 { background-color: #ffc2c2; }
+  :global(.dark) .petal-2 { background-color: #ffdede; }
+  :global(.dark) .petal-3 { background-color: #ffc2c2; }
+  :global(.dark) .petal-4 { background-color: #fcddf2; }
+  :global(.dark) .petal-5 { background-color: #ffdede; }
+
+  :global(.dark) .petal {
+    opacity: 0.6;
+  }
+
+  @keyframes fall {
+    0% {
+      transform: translateY(-50px) rotate(0deg);
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.8;
+    }
+    90% {
+      opacity: 0.8;
+    }
+    100% {
+      transform: translateY(100vh) rotate(360deg);
+      opacity: 0;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .petal {
+      width: 10px;
+      height: 10px;
+    }
+  }
+</style>

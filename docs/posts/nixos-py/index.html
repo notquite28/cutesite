@@ -1,8 +1,8 @@
-<!DOCTYPE html><html lang="en" data-astro-cid-sckkx6r4> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.13.2"><meta name="description" content="A cute and aesthetic personal website with a desktop interface"><link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/fontawesome.min.css" integrity="sha512-SgaqKKxJDQ/tAUAAXzvxZz33rmn7leYDYfBP+YoMRSENhf3zJyx3SBASt/OfeQwBHA1nxMis7mM3EV/oYT6Fdw==" crossorigin="anonymous" referrerpolicy="no-referrer"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/brands.min.css" integrity="sha512-9YHSK59/rjvhtDcY/b+4rdnl0V4LPDWdkKceBl8ZLF5TB6745ml1AfluEU6dFWqwDw9lPvnauxFgpKvJqp7jiQ==" crossorigin="anonymous" referrerpolicy="no-referrer"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/solid.min.css" integrity="sha512-yDUXOUWwbHH4ggxueDnC5vJv4tmfySpVdIcN1LksGZi8W8EVZv4uKGrQc0pVf66zS7LDhFJM7Zdeow1sw1/8Jw==" crossorigin="anonymous" referrerpolicy="no-referrer"><title>Python on NixOS</title><script type="module" src="/assets/Layout.astro_astro_type_script_index_0_lang.CnGTGErz.js"></script><script type="module" src="/trianglify-bg.js"></script><link rel="stylesheet" href="/assets/nixos-gaming.GtXHReRp.css"></head> <body class="blog-post-page" data-astro-cid-sckkx6r4>  <div class="blog-post-single p-8 max-w-4xl mx-auto" style="background-color: var(--window-content-bg); color: var(--text-color); height: auto; min-height: 100%; position: relative; z-index: 2; box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);"> <h1 class="font-bold text-3xl mb-2" style="color: var(--text-color);">Python on NixOS</h1> <p class="text-sm mb-4" style="color: var(--text-color); opacity: 0.8;">April 19, 2025</p> <div class="tags flex flex-wrap gap-2 mb-6"> <span class="tag px-2 py-1 rounded-full text-xs">linux</span><span class="tag px-2 py-1 rounded-full text-xs">nixos</span><span class="tag px-2 py-1 rounded-full text-xs">python</span> </div> <div class="blog-content prose prose-lg max-w-none" style="background-color: var(--window-content-bg); position: relative; z-index: 2;"> <h1 id="python-on-nixos-a-guide-for-the-challenged">Python on NixOS: A Guide for the Challenged</h1>
+<!DOCTYPE html><html lang="en" data-astro-cid-sckkx6r4> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.13.2"><meta name="description" content="A cute and aesthetic personal website"><link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/fontawesome.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/brands.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/solid.min.css"><title>Python on NixOS</title><script type="module" src="/assets/Layout.astro_astro_type_script_index_0_lang.BqV-_YaT.js"></script><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/assets/ClientRouter.astro_astro_type_script_index_0_lang.DZnDNxNb.js"></script><link rel="stylesheet" href="/assets/nixos-gaming.A5NfO5ff.css"></head> <body class="blog-post-page" data-astro-cid-sckkx6r4>  <div class="blog-post-single p-8 max-w-4xl mx-auto" style="background-color: var(--window-content-bg); color: var(--text-color); height: auto; min-height: 100%; position: relative; z-index: 2; box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);"> <h1 class="font-bold text-3xl mb-2" style="color: var(--text-color);">Python on NixOS</h1> <p class="text-sm mb-4" style="color: var(--text-color); opacity: 0.8;">April 19, 2025</p> <div class="tags flex flex-wrap gap-2 mb-6"> <span class="tag px-2 py-1 rounded-full text-xs">linux</span><span class="tag px-2 py-1 rounded-full text-xs">nixos</span><span class="tag px-2 py-1 rounded-full text-xs">python</span> </div> <div class="blog-content prose prose-lg max-w-none" style="background-color: var(--window-content-bg); position: relative; z-index: 2;"> <h1 id="python-on-nixos-a-guide-for-the-challenged">Python on NixOS: A Guide for the Challenged</h1>
 <h2 id="introduction">Introduction</h2>
 <p>Everyone and their mother uses NixOS now (Firebase and Railway too). Time to get to work and stack some paper since you spent your savings on that akasupa to the graduated VTuber(s) who you were parasocial for. So, you quickly install Python from the nixpkgs and then make your first import. The terminal shits out import errors from locations you never imagined existed on your system. WHAT THE HELL IS A NIX STORE!!! “Worked fine on my Arch install!!!”, you think. Buckle up rookie! I will what I wish I was told 8 months ago.</p>
 <p>My fella, do you need the method?</p>
-<p><img src="/cutesite/assets/blog/nixos-py/method.webp" alt="vegeta"></p>
+<p><img src="/assets/blog/nixos-py/method.webp" alt="vegeta"></p>
 <p>Let’s go with the simplest way I know (the non-Nix route) and let’s set up a reproducible Python environment using Nix, uv. You’ll finally be able to hopefully get your money up and not just your funny up. This involves exposing system libraries to python packages in the nix shell.</p>
 <h3 id="prerequisites">Prerequisites</h3>
 <ul>
@@ -29,13 +29,13 @@
 <span class="line"><span style="color:#E1E4E8">  ];</span></span>
 <span class="line"><span style="color:#E1E4E8">}</span></span></code></pre>
 <h3 id="step-1-enter-the-nix-shell">Step 1: Enter the Nix Shell</h3>
-<p><img src="/cutesite/assets/blog/nixos-py/py1.webp" alt="nix-shell"></p>
+<p><img src="/assets/blog/nixos-py/py1.webp" alt="nix-shell"></p>
 <div class="image-caption">nix-shell</div>
 <p>Open your terminal in the project directory and type:</p>
 <pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">nix-shell</span></span></code></pre>
 <p>This loads a reproducible shell with Python and uv, as dictated by your <code>shell.nix</code>. If it fails, honestly, you are cooked.</p>
 <h3 id="step-2-create-and-activate-a-virtual-environment">Step 2: Create and Activate a Virtual Environment</h3>
-<p><img src="/cutesite/assets/blog/nixos-py/py2.webp" alt="uv venv"></p>
+<p><img src="/assets/blog/nixos-py/py2.webp" alt="uv venv"></p>
 <div class="image-caption">venv time</div>
 <p>Let uv cook:</p>
 <pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">uv</span><span style="color:#9ECBFF"> venv</span></span>
@@ -46,13 +46,13 @@
 <pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">uv</span><span style="color:#9ECBFF"> init</span></span></code></pre>
 <p>So much for industry practices.</p>
 <h3 id="step-4-install-dependencies">Step 4: Install Dependencies</h3>
-<p><img src="/cutesite/assets/blog/nixos-py/py3.webp" alt="uv add"></p>
+<p><img src="/assets/blog/nixos-py/py3.webp" alt="uv add"></p>
 <div class="image-caption">uv doing its magic</div>
 <p>Time to summon your packages:</p>
 <pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">uv</span><span style="color:#9ECBFF"> add</span><span style="color:#79B8FF"> -r</span><span style="color:#9ECBFF"> requirements.txt</span></span></code></pre>
 <p>This will (hopefully) resolve and install everything. If it doesn’t, check your <code>requirements.txt</code> for typos, or find the nix-tards on reddit.</p>
 <h3 id="step-5-run-your-python-application">Step 5: Run Your Python Application</h3>
-<p><img src="/cutesite/assets/blog/nixos-py/py4.webp" alt="workey"></p>
+<p><img src="/assets/blog/nixos-py/py4.webp" alt="workey"></p>
 <div class="image-caption">app runs hopefully</div>
 <p>Cross your heart and run the code:</p>
 <pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#B392F0">uv</span><span style="color:#9ECBFF"> run</span><span style="color:#9ECBFF"> app.py</span></span></code></pre>
@@ -119,4 +119,4 @@
 </ul>
 <p>Congrats! You’ve now set up Python on the autism simulator that is NixOS. Go forth and break something new!</p>
 <p>Cheers! <br>
-quiet🌸</p> </div> </div>  <script type="module" src="/assets/Layout.astro_astro_type_script_index_1_lang.BEt9FOer.js"></script> </body> </html>
+quiet🌸</p> </div> </div>  <canvas id="trianglify-bg" class="fixed inset-0 w-full h-full pointer-events-none z-0" data-astro-cid-sckkx6r4></canvas> <script type="module" src="/assets/Layout.astro_astro_type_script_index_1_lang.BEt9FOer.js"></script> </body> </html>

@@ -1,40 +1,34 @@
 ---
-// Define the type for post frontmatter
 interface PostFrontmatter {
-  title: string;
-  description: string;
-  date: string;
-  tags?: string[];
+  title: string
+  description: string
+  date: string
+  tags?: string[]
 }
 
-// Define the type for post files
 interface Post {
-  frontmatter: PostFrontmatter;
-  url: string;
+  frontmatter: PostFrontmatter
+  url: string
 }
 
-// Use import.meta.glob to get all markdown files in the posts directory
-const postFiles = import.meta.glob('/src/pages/posts/*.md', { eager: true });
+const postFiles = import.meta.glob('/src/pages/posts/*.md', { eager: true })
 
-// Convert the object to an array of posts
 const posts: Post[] = Object.values(postFiles).map((mod: any) => ({
   frontmatter: mod.frontmatter,
   url: mod.url,
-}));
+}))
 
-// Sort posts by date (newest first)
 const sortedPosts = [...posts].sort((a: Post, b: Post) => {
-  return new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime();
-});
+  return new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime()
+})
 
-// Format date function
 function formatDate(dateString: string): string {
-  const date = new Date(dateString);
+  const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
-  });
+  })
 }
 ---
 
@@ -62,32 +56,20 @@ function formatDate(dateString: string): string {
 </div>
 
 <script>
-  // This is a TypeScript declaration to tell the compiler that openWindow exists on the window object
-  declare global {
-    interface Window {
-      openWindow: (windowId: string) => void;
-    }
-  }
+  import { openWindow } from '../stores/windows'
 
-  // Add event listeners to the entire blog post cards
-  document.addEventListener('DOMContentLoaded', () => {
-    const blogPosts = document.querySelectorAll('.blog-post');
+  document.addEventListener('astro:page-load', () => {
+    const blogPosts = document.querySelectorAll('.blog-post')
     blogPosts.forEach(post => {
       post.addEventListener('click', () => {
-        const url = (post as HTMLElement).dataset.url;
+        const url = (post as HTMLElement).dataset.url
         if (url) {
-          // Extract the slug from the URL
-          const slug = url.split('/').pop();
+          const slug = url.split('/').pop()
           if (slug) {
-            // Use window.openWindow if it exists (defined in windowManager.ts)
-            if (typeof window.openWindow === 'function') {
-              window.openWindow(`blog-${slug}`);
-            } else {
-              console.error('openWindow function not found');
-            }
+            openWindow(`blog-${slug}`)
           }
         }
-      });
-    });
-  });
+      })
+    })
+  })
 </script>

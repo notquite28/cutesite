@@ -1,0 +1,236 @@
+---
+import { Image } from 'astro:assets'
+import { USER_NAME, USER_EMAIL, SOCIAL_LINKS } from '../lib/constants'
+import '../styles/components/about.css'
+import '../styles/components/links.css'
+
+export interface Props {
+  windowId: string
+}
+
+const { windowId } = Astro.props
+const base = import.meta.env.BASE_URL ?? '/'
+
+const socialLinksHtml = Object.entries(SOCIAL_LINKS)
+  .map(([platform, url]) => {
+    const iconMap: Record<string, string> = {
+      github: 'fab fa-github',
+      twitter: 'fab fa-twitter',
+      spotify: 'fab fa-spotify',
+      medium: 'fab fa-medium',
+    }
+    const icon = iconMap[platform]
+    if (!icon) return ''
+    const name = platform.charAt(0).toUpperCase() + platform.slice(1)
+    return `
+      <a href="${url}" class="link-item" target="_blank" rel="noopener">
+        <i class="${icon} link-icon"></i>
+        <span>${name}</span>
+      </a>
+    `
+  })
+  .join('')
+---
+
+<div id="window-templates" style="display: none;">
+  <template id="content-about">
+    <div class="about-content">
+      <img src={`${base}images/profile.webp`} alt="Profile" class="profile-image" id="profile-image" width="120" height="120" />
+      <h2>{USER_NAME}</h2>
+      <p>CS graduate student with software development experience.</p>
+      <div class="about-sections">
+        <div class="about-section">
+          <h3>Tech Interests</h3>
+          <ul>
+            <li>Open-source, Linux (Arch & NixOS)</li>
+            <li>Machine Learning & Deep Learning</li>
+            <li>Virtualization & VFIO GPU passthrough</li>
+          </ul>
+        </div>
+        <div class="about-section">
+          <h3>Hobbies</h3>
+          <ul>
+            <li>Anime, manga, sketching, videogames, music</li>
+            <li>City Pop, Japanese Alternative Rock & guitars</li>
+            <li>Mechanical keyboards</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="content-links">
+    <div class="links-content">
+      <h2>Find Me Online</h2>
+      <div class="links-grid">
+        <Fragment set:html={socialLinksHtml} />
+        <a href={`mailto:${USER_EMAIL}`} class="link-item">
+          <i class="fas fa-envelope link-icon"></i>
+          <span>Email</span>
+        </a>
+        <a href={`${base}posts`} class="link-item">
+          <i class="fas fa-mobile-alt link-icon"></i>
+          <span>My Blogs</span>
+        </a>
+      </div>
+    </div>
+  </template>
+
+  <template id="content-work">
+    <div id="dynamic-work-content" class="w-full h-full"></div>
+  </template>
+
+  <template id="content-faq">
+    <div class="faq-content">
+      <h2>???</h2>
+      <div class="faq-item">
+        <h3>???</h3>
+        <p>???</p>
+      </div>
+      <div class="faq-item" id="controller-trigger-panel" style="cursor: pointer;">
+        <h3>Found something?</h3>
+        <p>Click here...</p>
+      </div>
+      <div class="faq-item">
+        <h3>???</h3>
+        <p>???</p>
+      </div>
+    </div>
+  </template>
+
+  <template id="content-autism">
+    <div class="autism-content">
+      <h2>autism links</h2>
+      <div class="card-list">
+        <a href="https://www.reddit.com/r/degoogle/comments/huk4rp/why_you_should_degoogle_intro_degoogling/" class="card" target="_blank" rel="noopener">
+          <h3>Degoogling</h3>
+          <p>Reduce the amount of data Google can steal from you!</p>
+        </a>
+        <a href="https://www.privacytools.io/" class="card" target="_blank" rel="noopener">
+          <h3>Stay Private Online!</h3>
+          <p>Various Privacy Tools</p>
+        </a>
+        <a href="https://www.youtube.com/watch?v=239w7x2TdWE" class="card" target="_blank" rel="noopener">
+          <h3>Are VPNs really private?</h3>
+          <p>VPNs keep no logs. Right? RIGHT??????</p>
+        </a>
+        <a href="https://www.trustedreviews.com/news/utorrent-silently-installing-bundled-bitcoin-mining-software-2931825" class="card" target="_blank" rel="noopener">
+          <h3>BitTorrent crypto mining</h3>
+          <p>Your harem anime spiking CPU usage?</p>
+        </a>
+        <a href="https://drive.google.com/file/d/1H_ydGw_leVuMpRzrEoC8nAWhmR1kGr0i/view" class="card" target="_blank" rel="noopener">
+          <h3>PlayStation 2 BIOS</h3>
+          <p>Curated BIOS for PS2 games</p>
+        </a>
+        <a href="https://www.playstation.com/en-us/support/hardware/ps3/system-software/" class="card" target="_blank" rel="noopener">
+          <h3>PlayStation 3 Firmware</h3>
+          <p>Official Sony repo for PS3 firmware</p>
+        </a>
+        <a href="https://www.reddit.com/r/Piracy/wiki/megathread/games/" class="card" target="_blank" rel="noopener">
+          <h3>Stealing Stuff Pt. 1</h3>
+          <p>Guide for games</p>
+        </a>
+        <a href="https://www.reddit.com/r/Piracy/wiki/tools" class="card" target="_blank" rel="noopener">
+          <h3>Stealing Stuff Pt. 2</h3>
+          <p>Guide for other software</p>
+        </a>
+        <a href="https://nyaa.si/" class="card" target="_blank" rel="noopener">
+          <h3>Stealing Stuff Pt. 3</h3>
+          <p>Guide for stinky weebs</p>
+        </a>
+      </div>
+    </div>
+  </template>
+</div>
+
+<style>
+  .loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-top-color: var(--highlight-color);
+    animation: spin 1s infinite linear;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .faq-content h2,
+  .autism-content h2 {
+    color: var(--highlight-color);
+    font-weight: bold;
+    text-align: center;
+  }
+
+  .faq-item {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 2px dashed var(--icon-border);
+  }
+
+  .faq-item h3 {
+    color: var(--highlight-color);
+    font-weight: bold;
+  }
+
+  .autism-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .autism-content h2 {
+    color: var(--highlight-color);
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .card {
+    display: block;
+    padding: 0.75rem 1rem;
+    background-color: var(--icon-bg);
+    border: 2px solid var(--card-border);
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .card:hover {
+    transform: translateX(5px);
+    border-color: var(--highlight-color);
+  }
+
+  .card h3 {
+    color: var(--text-color);
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin: 0 0 0.25rem 0;
+  }
+
+  .card p {
+    color: var(--text-color);
+    font-size: 0.75rem;
+    margin: 0;
+    opacity: 0.8;
+  }
+</style>

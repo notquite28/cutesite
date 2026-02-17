@@ -1,0 +1,69 @@
+.links-content {
+  padding: 1rem;
+  max-width: 450px;
+}
+
+.links-content h2 {
+  color: var(--highlight-color);
+  font-weight: bold;
+  font-size: 1.5rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.links-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  justify-items: center;
+  gap: 1.5rem;
+  margin: 1.5rem auto;
+  max-width: 400px;
+}
+
+.link-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: var(--text-color);
+  transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  width: 80px;
+  text-align: center;
+}
+
+.link-item:hover {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.link-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: var(--window-content-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid var(--icon-border);
+  font-size: 1.5rem;
+  color: var(--text-color);
+  padding: 0.625rem;
+}
+
+:global(.dark) .link-icon {
+  background-color: var(--window-title-bg);
+  color: var(--window-title-text);
+}
+
+.link-item span {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+@media (max-width: 480px) {
+  .links-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

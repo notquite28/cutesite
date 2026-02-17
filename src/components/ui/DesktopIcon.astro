@@ -1,0 +1,71 @@
+---
+import { Image } from 'astro:assets'
+
+export interface Props {
+  id: string
+  name: string
+}
+
+const { id, name } = Astro.props
+const base = import.meta.env.BASE_URL ?? '/'
+---
+
+<button
+  class="desktop-icon"
+  data-window-id={id}
+  aria-label={`Open ${name}`}
+>
+  <div class="icon-image">
+    <Image
+      src={`${base}images/icons/${id}.svg`}
+      alt={`${name} icon`}
+      width={70}
+      height={70}
+      loading="lazy"
+    />
+  </div>
+  <span class="icon-label">{name}</span>
+</button>
+
+<style>
+  .desktop-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    width: 100px;
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  }
+
+  .desktop-icon:hover {
+    transform: scale(1.1) rotate(3deg);
+  }
+
+  .icon-image {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.3s ease;
+  }
+
+  .desktop-icon:hover .icon-image {
+    transform: scale(1.05);
+  }
+
+  .icon-label {
+    font-size: 0.875rem;
+    text-align: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 10px;
+    background-color: var(--window-title-bg);
+    color: var(--window-title-text);
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+</style>

@@ -1,0 +1,123 @@
+.blog-post {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+  background-color: var(--window-content-bg);
+}
+
+.blog-post h1,
+.blog-post h2,
+.blog-post h3 {
+  color: var(--text-color);
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: bold;
+}
+
+.blog-post h1 {
+  font-size: 2.25rem;
+  border-bottom: 2px solid var(--highlight-color);
+  padding-bottom: 0.5rem;
+}
+
+.blog-post h2 {
+  font-size: 1.75rem;
+  border-bottom: 1px solid var(--highlight-color);
+  padding-bottom: 0.25rem;
+}
+
+.blog-post h3 {
+  font-size: 1.5rem;
+}
+
+.blog-post p {
+  margin-bottom: 1.25em;
+  line-height: 1.8;
+  font-size: 1.1rem;
+}
+
+.blog-post ul,
+.blog-post ol {
+  margin-bottom: 1.25em;
+  padding-left: 2em;
+  line-height: 1.8;
+  font-size: 1.1rem;
+}
+
+.blog-post ul {
+  list-style-type: disc;
+}
+
+.blog-post ol {
+  list-style-type: decimal;
+}
+
+.blog-post li {
+  margin-bottom: 0.5em;
+}
+
+.blog-post a {
+  color: var(--window-title-bg);
+  text-decoration: underline;
+  transition: color 0.2s ease;
+  font-weight: 600;
+}
+
+:global(.dark) .blog-post a {
+  color: #a2b9ff;
+}
+
+.blog-post a:hover {
+  text-decoration: none;
+  color: var(--highlight-color);
+}
+
+:global(.dark) .blog-post a:hover {
+  color: white;
+}
+
+.blog-post img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: block;
+}
+
+.blog-post code {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 0.9em;
+  color: var(--text-color);
+}
+
+:global(.dark) .blog-post code {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.blog-post pre {
+  background-color: #2d2d2d;
+  color: #f8f8f2;
+  padding: 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid var(--window-title-bg);
+}
+
+:global(.dark) .blog-post pre {
+  background-color: #1a1a1a;
+  border-left-color: var(--highlight-color);
+}
+
+.blog-post pre code {
+  background-color: transparent;
+  padding: 0;
+  color: #f8f8f2;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}

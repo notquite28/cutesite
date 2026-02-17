@@ -1,0 +1,110 @@
+---
+const base = import.meta.env.BASE_URL ?? '/'
+---
+
+<button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+  <div id="oneko"></div>
+</button>
+
+<style>
+  .theme-toggle {
+    background-color: var(--icon-bg);
+    border: 3px solid var(--icon-border);
+    border-radius: 10px;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    box-shadow: var(--icon-shadow);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .theme-toggle:hover {
+    transform: scale(1.15) rotate(5deg);
+  }
+
+  #oneko {
+    width: 32px;
+    height: 32px;
+    background-image: url('/images/oneko.gif');
+    background-repeat: no-repeat;
+    background-position: -96px -96px;
+    image-rendering: pixelated;
+    transform: scale(1.2);
+  }
+
+  :global(.dark) #oneko {
+    background-position: -64px 0;
+    animation: sleep 1s steps(2) infinite;
+  }
+
+  :global(html:not(.dark)) #oneko {
+    background-position: -96px -96px;
+    animation: none;
+  }
+
+  :global(html:not(.dark)) #oneko.waking-up {
+    animation: wakeup 2.5s steps(1) forwards;
+  }
+
+  @keyframes sleep {
+    0%, 50% {
+      background-position: -64px 0;
+    }
+    50.00001%, 100% {
+      background-position: -64px -32px;
+    }
+  }
+
+  @keyframes wakeup {
+    0% {
+      background-position: -64px 0;
+    }
+    15% {
+      background-position: -160px 0;
+    }
+    30% {
+      background-position: -192px 0;
+    }
+    45% {
+      background-position: -224px 0;
+    }
+    60% {
+      background-position: -96px -64px;
+    }
+    75% {
+      background-position: -96px -96px;
+    }
+    100% {
+      background-position: -96px -96px;
+    }
+  }
+</style>
+
+<script>
+  import { toggleDarkMode, $theme } from '../../stores/theme'
+
+  document.addEventListener('astro:page-load', () => {
+    const toggle = document.getElementById('theme-toggle')
+    const oneko = document.getElementById('oneko')
+    
+    if (!toggle || !oneko) return
+
+    toggle.addEventListener('click', () => {
+      const wasDark = document.documentElement.classList.contains('dark')
+      
+      toggleDarkMode()
+      
+      if (wasDark) {
+        oneko.classList.add('waking-up')
+        setTimeout(() => {
+          oneko.classList.remove('waking-up')
+        }, 2500)
+      }
+    })
+  })
+</script>

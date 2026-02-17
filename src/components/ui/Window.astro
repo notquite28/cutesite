@@ -1,0 +1,120 @@
+---
+export interface Props {
+  id: string
+  title: string
+  width?: string
+  height?: string
+}
+
+const { id, title, width, height } = Astro.props
+
+const widthStyle = width || 'min(90vw, 650px)'
+const heightStyle = height || 'auto'
+---
+
+<div
+  class="window"
+  data-window-id={id}
+  style={`width: ${widthStyle}; ${height !== 'auto' ? `height: ${heightStyle};` : ''}`}
+>
+  <header class="window-header" data-drag-handle>
+    <span class="window-title">{title}</span>
+    <button class="window-close" aria-label={`Close ${title}`} data-close>
+      ×
+    </button>
+  </header>
+  <main class="window-content">
+    <slot />
+  </main>
+</div>
+
+<style>
+  .window {
+    position: absolute;
+    border-radius: 15px;
+    box-shadow: var(--window-shadow);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 3px solid var(--window-title-bg);
+    background-color: var(--window-content-bg);
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .window.is-open {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .window.is-active {
+    box-shadow: var(--window-shadow), 0 0 15px rgba(147, 112, 219, 0.5);
+  }
+
+  .window.is-dragging {
+    opacity: 0.95;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    transition: none;
+  }
+
+  .window-header {
+    background-color: var(--window-title-bg);
+    color: var(--window-title-text);
+    padding: 0.5rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+    user-select: none;
+  }
+
+  .window-title {
+    font-weight: bold;
+    font-size: 0.875rem;
+    text-transform: lowercase;
+  }
+
+  .window-close {
+    background: transparent;
+    border: none;
+    color: var(--window-title-text);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.25rem;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+  }
+
+  .window-close:hover {
+    transform: scale(1.1);
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .window-content {
+    padding: 1.5rem;
+    overflow: auto;
+    flex: 1;
+    background-color: var(--window-content-bg);
+  }
+
+  .window.is-loading .window-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+  }
+
+  @media (max-width: 640px) {
+    .window {
+      min-width: 280px !important;
+      max-width: 95% !important;
+    }
+  }
+</style>
