@@ -1,14 +1,11 @@
 ---
-import { Image } from 'astro:assets'
 import { USER_NAME, USER_EMAIL, SOCIAL_LINKS } from '../lib/constants'
 import '../styles/components/about.css'
 import '../styles/components/links.css'
 
 export interface Props {
-  windowId: string
+  windowId?: string
 }
-
-const { windowId } = Astro.props
 const base = import.meta.env.BASE_URL ?? '/'
 
 const socialLinksHtml = Object.entries(SOCIAL_LINKS)

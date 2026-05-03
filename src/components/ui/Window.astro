@@ -18,10 +18,12 @@ const heightStyle = height || 'auto'
   style={`width: ${widthStyle}; ${height !== 'auto' ? `height: ${heightStyle};` : ''}`}
 >
   <header class="window-header" data-drag-handle>
+    <div class="window-titlebar-dots">
+      <button class="titlebar-dot titlebar-dot-close" data-close aria-label={`Close ${title}`}></button>
+      <span class="titlebar-dot titlebar-dot-minimize"></span>
+      <span class="titlebar-dot titlebar-dot-maximize"></span>
+    </div>
     <span class="window-title">{title}</span>
-    <button class="window-close" aria-label={`Close ${title}`} data-close>
-      ×
-    </button>
   </header>
   <main class="window-content">
     <slot />
@@ -31,16 +33,20 @@ const heightStyle = height || 'auto'
 <style>
   .window {
     position: absolute;
-    border-radius: 15px;
+    border-radius: 14px;
     box-shadow: var(--window-shadow);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    border: 3px solid var(--window-title-bg);
+    border: 1px solid var(--window-border);
     background-color: var(--window-content-bg);
+    backdrop-filter: blur(var(--window-blur)) saturate(var(--window-saturate));
+    -webkit-backdrop-filter: blur(var(--window-blur)) saturate(var(--window-saturate));
     opacity: 0;
     transform: scale(0.9);
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+    transition: opacity 0.3s var(--ease-bubble), transform 0.3s var(--ease-bubble);
   }
 
   .window.is-open {
@@ -49,17 +55,19 @@ const heightStyle = height || 'auto'
   }
 
   .window.is-active {
-    box-shadow: var(--window-shadow), 0 0 15px rgba(147, 112, 219, 0.5);
+    box-shadow: var(--window-shadow), 0 0 0 1px rgba(255, 255, 255, 0.2), 0 0 20px rgba(147, 112, 219, 0.2);
   }
 
   .window.is-dragging {
     opacity: 0.95;
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.15);
     transition: none;
   }
 
   .window-header {
     background-color: var(--window-title-bg);
+    backdrop-filter: blur(var(--window-blur)) saturate(var(--window-saturate));
+    -webkit-backdrop-filter: blur(var(--window-blur)) saturate(var(--window-saturate));
     color: var(--window-title-text);
     padding: 0.5rem 1rem;
     display: flex;
@@ -67,6 +75,7 @@ const heightStyle = height || 'auto'
     align-items: center;
     cursor: move;
     user-select: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   }
 
   .window-title {
@@ -75,32 +84,11 @@ const heightStyle = height || 'auto'
     text-transform: lowercase;
   }
 
-  .window-close {
-    background: transparent;
-    border: none;
-    color: var(--window-title-text);
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1.25rem;
-    width: 1.75rem;
-    height: 1.75rem;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: transform 0.2s ease, background-color 0.2s ease;
-  }
-
-  .window-close:hover {
-    transform: scale(1.1);
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-
   .window-content {
     padding: 1.5rem;
     overflow: auto;
     flex: 1;
-    background-color: var(--window-content-bg);
+    background-color: transparent;
   }
 
   .window.is-loading .window-content {

@@ -1,0 +1,1 @@
+import{o as s}from"./chunks/windows.DNb-K3pY.js";import"./chunks/index.CDAgpjSw.js";document.addEventListener("astro:page-load",()=>{document.querySelectorAll(".blog-post").forEach(o=>{o.addEventListener("click",()=>{const t=o.dataset.url;if(t){const e=t.split("/").pop();e&&s(`blog-${e}`)}})})});

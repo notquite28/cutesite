@@ -3,7 +3,7 @@ import ThemeToggle from './ui/ThemeToggle.astro'
 import DesktopIcon from './ui/DesktopIcon.astro'
 import CherryBlossoms from './features/CherryBlossoms.astro'
 import WindowContent from './WindowContent.astro'
-import { USER_NAME, CURRENT_YEAR, SOCIAL_LINKS, USER_EMAIL } from '../lib/constants'
+import { USER_NAME, CURRENT_YEAR } from '../lib/constants'
 import { Image } from 'astro:assets'
 
 const base = import.meta.env.BASE_URL ?? '/'
@@ -28,6 +28,12 @@ const base = import.meta.env.BASE_URL ?? '/'
 
   <div class="desktop-content">
     <div class="home-window" id="home-window">
+      <div class="home-titlebar" aria-hidden="true">
+        <span class="titlebar-dot"></span>
+        <span class="titlebar-dot"></span>
+        <span class="titlebar-dot"></span>
+        <span class="home-titlebar-label">quiet.local</span>
+      </div>
       <header class="home-header">
         <span id="greeting" class="greeting" lang="ja">こんにちは！</span>
       </header>
@@ -45,12 +51,15 @@ const base = import.meta.env.BASE_URL ?? '/'
   <div id="windows-container" class="windows-container"></div>
 
   <div id="konami-controller" class="konami-controller hidden">
-    <div class="controller-header">
-      <h3>Controller</h3>
-      <button id="controller-close" aria-label="Close controller">×</button>
-    </div>
-    <div class="controller-body">
-      <div class="sequence-progress">
+    <div class="controller-shell">
+      <div class="controller-header">
+        <div class="controller-brand">
+          <span class="controller-mark" aria-hidden="true">♡</span>
+          <h3>konami pad</h3>
+        </div>
+        <button id="controller-close" aria-label="Close controller">×</button>
+      </div>
+      <div class="sequence-progress" aria-label="Konami sequence progress">
         <span class="dot" data-index="0"></span>
         <span class="dot" data-index="1"></span>
         <span class="dot" data-index="2"></span>
@@ -62,18 +71,26 @@ const base = import.meta.env.BASE_URL ?? '/'
         <span class="dot" data-index="8"></span>
         <span class="dot" data-index="9"></span>
       </div>
-      <jpad-controller>
-        <div class="dpad">
-          <jpad-button id="btn-up" name="up" keys="ArrowUp">↑</jpad-button>
-          <jpad-button id="btn-down" name="down" keys="ArrowDown">↓</jpad-button>
-          <jpad-button id="btn-left" name="left" keys="ArrowLeft">←</jpad-button>
-          <jpad-button id="btn-right" name="right" keys="ArrowRight">→</jpad-button>
-        </div>
-        <div class="action-buttons">
-          <jpad-button id="btn-b" name="b" keys="KeyB">B</jpad-button>
-          <jpad-button id="btn-a" name="a" keys="KeyA">A</jpad-button>
-        </div>
-      </jpad-controller>
+      <div class="controller-body">
+        <jpad-controller>
+          <div class="dpad" aria-label="Directional buttons">
+            <jpad-button id="btn-up" name="up" keys="ArrowUp" aria-label="Up">↑</jpad-button>
+            <jpad-button id="btn-down" name="down" keys="ArrowDown" aria-label="Down">↓</jpad-button>
+            <jpad-button id="btn-left" name="left" keys="ArrowLeft" aria-label="Left">←</jpad-button>
+            <jpad-button id="btn-right" name="right" keys="ArrowRight" aria-label="Right">→</jpad-button>
+          </div>
+          <div class="controller-center" aria-hidden="true">
+            <span class="speaker-line"></span>
+            <span class="speaker-line"></span>
+            <span class="speaker-line"></span>
+            <span class="start-pill">start</span>
+          </div>
+          <div class="action-buttons" aria-label="Action buttons">
+            <jpad-button id="btn-b" name="b" keys="KeyB" aria-label="B">B</jpad-button>
+            <jpad-button id="btn-a" name="a" keys="KeyA" aria-label="A">A</jpad-button>
+          </div>
+        </jpad-controller>
+      </div>
     </div>
   </div>
 
@@ -92,8 +109,12 @@ const base = import.meta.env.BASE_URL ?? '/'
     
     el.innerHTML = `
       <header class="window-header" data-drag-handle>
+        <div class="window-titlebar-dots">
+          <button class="titlebar-dot titlebar-dot-close" data-close aria-label="Close ${state.title}"></button>
+          <span class="titlebar-dot titlebar-dot-minimize"></span>
+          <span class="titlebar-dot titlebar-dot-maximize"></span>
+        </div>
         <span class="window-title">${state.title}</span>
-        <button class="window-close" aria-label="Close ${state.title}" data-close>×</button>
       </header>
       <main class="window-content"></main>
     `
@@ -285,6 +306,7 @@ const base = import.meta.env.BASE_URL ?? '/'
     height: 100vh;
     position: relative;
     background-color: var(--window-bg);
+    isolation: isolate;
   }
 
   .decorations {
@@ -371,11 +393,54 @@ const base = import.meta.env.BASE_URL ?? '/'
 
   .home-window {
     background-color: var(--window-content-bg);
-    border: 3px solid var(--window-title-bg);
-    border-radius: 15px;
+    border: 1px solid var(--window-border);
+    border-radius: 18px;
     padding: 2rem;
     box-shadow: var(--window-shadow);
+    backdrop-filter: blur(var(--window-blur)) saturate(var(--window-saturate));
+    -webkit-backdrop-filter: blur(var(--window-blur)) saturate(var(--window-saturate));
     z-index: 5;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .home-window::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  }
+
+  .home-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin: -2rem -2rem 1.5rem;
+    padding: 0.55rem 0.85rem;
+    background-color: var(--window-title-bg);
+    backdrop-filter: blur(var(--window-blur)) saturate(var(--window-saturate));
+    -webkit-backdrop-filter: blur(var(--window-blur)) saturate(var(--window-saturate));
+    color: var(--window-title-text);
+    font-size: 0.8rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: lowercase;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .titlebar-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--window-title-text);
+    opacity: 0.72;
+  }
+
+  .home-titlebar-label {
+    margin-left: 0.35rem;
+    opacity: 0.9;
   }
 
   .home-header {
@@ -385,7 +450,8 @@ const base = import.meta.env.BASE_URL ?? '/'
 
   .greeting {
     font-size: 1.5rem;
-    font-weight: 600;
+    font-family: var(--font-display);
+    font-weight: 700;
     color: var(--text-color);
   }
 
@@ -436,10 +502,11 @@ const base = import.meta.env.BASE_URL ?? '/'
 
   .konami-hint {
     position: absolute;
-    bottom: 2.5rem;
+    bottom: 2.75rem;
     left: 50%;
     transform: translateX(-50%);
     font-size: 0.7rem;
+    font-family: var(--font-display);
     color: var(--text-color);
     opacity: 0.4;
     z-index: 5;
@@ -450,101 +517,223 @@ const base = import.meta.env.BASE_URL ?? '/'
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    border: 3px solid #e94560;
-    border-radius: 15px;
-    padding: 1.5rem;
     z-index: 1000;
-    box-shadow: 0 0 30px rgba(233, 69, 96, 0.3);
-    min-width: 280px;
+    width: min(92vw, 520px);
+    color: #69435b;
+    isolation: isolate;
+  }
+
+  .konami-controller::before {
+    content: '';
+    position: fixed;
+    inset: -100vmax;
+    background: rgba(254, 240, 245, 0.68);
+    z-index: -1;
   }
 
   .konami-controller.hidden {
     display: none;
   }
 
+  .controller-shell {
+    position: relative;
+    padding: 1.25rem 1.35rem 1.45rem;
+    border: 3px solid #d498a3;
+    border-radius: 42px 42px 56px 56px;
+    background:
+      radial-gradient(circle at 18% 18%, rgba(255, 245, 247, 0.92) 0 12%, transparent 28%),
+      radial-gradient(circle at 82% 20%, rgba(248, 211, 226, 0.82) 0 12%, transparent 30%),
+      linear-gradient(145deg, #fff5f7 0%, #f8d3e2 54%, #e9b8c8 100%);
+    box-shadow:
+      0 24px 48px rgba(139, 69, 99, 0.22),
+      inset 0 2px 0 rgba(255, 255, 255, 0.8),
+      inset 0 -8px 18px rgba(139, 69, 99, 0.12);
+  }
+
+  .controller-shell::before,
+  .controller-shell::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    width: 154px;
+    height: 102px;
+    border: 3px solid #d498a3;
+    border-top: 0;
+    border-radius: 0 0 64px 64px;
+    background: linear-gradient(180deg, #f4c2d1 0%, #d498a3 100%);
+    z-index: -1;
+    box-shadow: inset 0 -8px 14px rgba(139, 69, 99, 0.12);
+  }
+
+  .controller-shell::before {
+    left: 6px;
+    transform: rotate(10deg);
+  }
+
+  .controller-shell::after {
+    right: 6px;
+    transform: rotate(-10deg);
+  }
+
   .controller-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #e94560;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+    padding: 0.25rem 0.35rem 0;
+  }
+
+  .controller-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .controller-mark {
+    display: grid;
+    place-items: center;
+    width: 1.65rem;
+    height: 1.65rem;
+    border-radius: 50%;
+    background: #8b4563;
+    color: #fff5f7;
+    font-size: 0.9rem;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18);
   }
 
   .controller-header h3 {
-    color: #e94560;
-    font-size: 1rem;
+    color: #8b4563;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    letter-spacing: 0;
     margin: 0;
   }
 
   .controller-header button {
-    background: transparent;
-    border: none;
-    color: #e94560;
+    width: 2.15rem;
+    height: 2.15rem;
+    display: grid;
+    place-items: center;
+    background: #fff5f7;
+    border: 2px solid #d498a3;
+    border-radius: 50%;
+    color: #8b4563;
     font-size: 1.25rem;
+    font-weight: 800;
     cursor: pointer;
-    padding: 0.25rem 0.5rem;
+    padding: 0;
+    box-shadow: 0 3px 0 #c3829e;
+    transition: transform 0.18s var(--ease-bubble), box-shadow 0.18s ease;
   }
 
   .controller-header button:hover {
-    color: #ff6b6b;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 0 #c3829e;
+  }
+
+  .controller-header button:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #c3829e;
   }
 
   .sequence-progress {
     display: flex;
     justify-content: center;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
+    gap: 0.4rem;
+    margin: 0 auto 1.2rem;
+    padding: 0.4rem 0.55rem;
+    width: max-content;
+    border-radius: 9999px;
+    background: rgba(139, 69, 99, 0.13);
+    box-shadow: inset 0 2px 6px rgba(139, 69, 99, 0.12);
   }
 
   .sequence-progress .dot {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
-    background: #333;
-    border: 2px solid #e94560;
-    transition: all 0.2s ease;
+    background: #fff5f7;
+    border: 2px solid #c3829e;
+    box-shadow: inset 0 -1px 0 rgba(139, 69, 99, 0.16);
+    transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
   }
 
   .sequence-progress .dot.active {
-    background: #e94560;
-    box-shadow: 0 0 10px #e94560;
+    background: #ffb7ce;
+    border-color: #8b4563;
+    box-shadow: 0 0 12px rgba(242, 185, 196, 0.88), inset 0 -1px 0 rgba(139, 69, 99, 0.18);
   }
 
   .controller-body jpad-controller {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    gap: 1rem;
+    gap: 1.1rem;
+    height: 154px !important;
+    min-height: 0 !important;
   }
 
   .dpad {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
-    gap: 0.25rem;
-    width: 120px;
+    gap: 0;
+    width: 126px;
+    height: 126px;
+    place-items: center;
+    border-radius: 50%;
+    background: #e5a8b7;
+    box-shadow:
+      inset 0 4px 9px rgba(255, 245, 247, 0.62),
+      inset 0 -7px 12px rgba(139, 69, 99, 0.16);
   }
 
-  .dpad jpad-button {
+  .dpad::before {
+    content: '';
+    grid-column: 2;
+    grid-row: 2;
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: #0f3460;
-    border: 2px solid #e94560;
-    color: #e94560;
+    background: #323044;
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.12);
+    z-index: 1;
+  }
+
+  .dpad jpad-button {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #343247;
+    border: 0;
+    color: #fff5f7;
+    font-family: var(--font-display);
     font-size: 1rem;
+    font-weight: 800;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.15s ease;
+    box-shadow:
+      0 4px 0 #1f1e2d,
+      inset 0 2px 0 rgba(255, 255, 255, 0.12);
+    transition: transform 0.14s var(--ease-bubble), box-shadow 0.14s ease, background-color 0.14s ease;
+    z-index: 2;
   }
 
   .dpad jpad-button:hover {
-    background: #e94560;
-    color: #1a1a2e;
+    background: #47445f;
+    transform: translateY(-1px);
+  }
+
+  .dpad jpad-button:active {
+    transform: translateY(3px);
+    box-shadow:
+      0 1px 0 #1f1e2d,
+      inset 0 2px 4px rgba(0, 0, 0, 0.22);
   }
 
   .dpad jpad-button:nth-child(1) { grid-column: 2; grid-row: 1; }
@@ -552,41 +741,166 @@ const base = import.meta.env.BASE_URL ?? '/'
   .dpad jpad-button:nth-child(3) { grid-column: 1; grid-row: 2; }
   .dpad jpad-button:nth-child(4) { grid-column: 3; grid-row: 2; }
 
+  .controller-center {
+    display: grid;
+    justify-items: center;
+    gap: 0.35rem;
+    min-width: 76px;
+    padding-top: 0.2rem;
+  }
+
+  .speaker-line {
+    width: 48px;
+    height: 5px;
+    border-radius: 9999px;
+    background: rgba(139, 69, 99, 0.38);
+    box-shadow: inset 0 1px 0 rgba(255, 245, 247, 0.5);
+  }
+
+  .start-pill {
+    margin-top: 0.4rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: 9999px;
+    background: #8b4563;
+    color: #fff5f7;
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: lowercase;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18);
+  }
+
   .action-buttons {
     display: flex;
-    gap: 1rem;
-    margin-top: 0.5rem;
+    justify-content: center;
+    gap: 0.95rem;
+    padding: 1.05rem;
+    border-radius: 9999px;
+    background: #e5a8b7;
+    transform: rotate(-14deg);
+    box-shadow:
+      inset 0 4px 9px rgba(255, 245, 247, 0.62),
+      inset 0 -7px 12px rgba(139, 69, 99, 0.16);
   }
 
   .action-buttons jpad-button {
-    width: 50px;
-    height: 50px;
+    width: 54px;
+    height: 54px;
     border-radius: 50%;
-    font-size: 1.25rem;
-    font-weight: bold;
+    border: 0;
+    color: #fff5f7;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 800;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transform: rotate(14deg);
+    transition: transform 0.14s var(--ease-bubble), box-shadow 0.14s ease, filter 0.14s ease;
   }
 
   .action-buttons jpad-button#btn-b {
-    background: #1a1a2e;
-    border: 3px solid #e94560;
-    color: #e94560;
+    background: #8b4563;
+    box-shadow:
+      0 5px 0 #5b263f,
+      inset 0 2px 0 rgba(255, 245, 247, 0.28);
   }
 
   .action-buttons jpad-button#btn-a {
-    background: #e94560;
-    border: 3px solid #ff6b6b;
-    color: #1a1a2e;
+    background: #616c99;
+    box-shadow:
+      0 5px 0 #3f4567,
+      inset 0 2px 0 rgba(255, 245, 247, 0.28);
   }
 
   .action-buttons jpad-button:hover {
-    transform: scale(1.1);
+    filter: brightness(1.08);
+    transform: rotate(14deg) translateY(-1px);
+  }
+
+  .action-buttons jpad-button:active {
+    transform: rotate(14deg) translateY(3px);
+    box-shadow:
+      0 1px 0 rgba(91, 38, 63, 0.95),
+      inset 0 2px 5px rgba(0, 0, 0, 0.22);
+  }
+
+  :global(.dark) .controller-shell {
+    border-color: #fcddf2;
+    background:
+      radial-gradient(circle at 18% 18%, rgba(255, 222, 222, 0.18) 0 12%, transparent 28%),
+      radial-gradient(circle at 82% 20%, rgba(252, 221, 242, 0.2) 0 12%, transparent 30%),
+      linear-gradient(145deg, #616c99 0%, #505477 58%, #3d405f 100%);
+    box-shadow:
+      0 24px 48px rgba(0, 0, 0, 0.3),
+      inset 0 2px 0 rgba(255, 255, 255, 0.14),
+      inset 0 -8px 18px rgba(0, 0, 0, 0.16);
+  }
+
+  :global(.dark) .controller-shell::before,
+  :global(.dark) .controller-shell::after {
+    border-color: #fcddf2;
+    background: linear-gradient(180deg, #616c99 0%, #454a70 100%);
+  }
+
+  :global(.dark) .controller-header h3,
+  :global(.dark) .konami-controller {
+    color: #ffdede;
+  }
+
+  :global(.dark) .controller-mark,
+  :global(.dark) .start-pill {
+    background: #fcddf2;
+    color: #505477;
+  }
+
+  :global(.dark) .controller-header button {
+    background: #505477;
+    border-color: #fcddf2;
+    color: #ffdede;
+    box-shadow: 0 3px 0 #333750;
+  }
+
+  :global(.dark) .sequence-progress,
+  :global(.dark) .dpad,
+  :global(.dark) .action-buttons {
+    background: rgba(252, 221, 242, 0.18);
+  }
+
+  :global(.dark) .sequence-progress .dot {
+    background: #505477;
+    border-color: #fcddf2;
+  }
+
+  :global(.dark) .sequence-progress .dot.active {
+    background: #ffc2c2;
+    border-color: #ffdede;
+  }
+
+  :global(.dark) .speaker-line {
+    background: rgba(255, 222, 222, 0.36);
+  }
+
+  :global(.dark) .konami-controller::before {
+    background: rgba(80, 84, 119, 0.64);
   }
 
   @media (max-width: 640px) {
+    .desktop-content {
+      justify-content: flex-start;
+      padding-top: 32vh;
+      padding-bottom: 10rem;
+    }
+
     .home-window {
+      width: min(100%, 278px);
       padding: 1.5rem;
+      border-radius: 16px;
+      backdrop-filter: blur(var(--window-blur)) saturate(var(--window-saturate));
+      -webkit-backdrop-filter: blur(var(--window-blur)) saturate(var(--window-saturate));
+    }
+
+    .home-titlebar {
+      margin: -1.5rem -1.5rem 1.25rem;
+      padding: 0.5rem 0.75rem;
     }
 
     .greeting {
@@ -596,6 +910,80 @@ const base = import.meta.env.BASE_URL ?? '/'
     .sakura-decoration {
       max-width: 250px;
       transform: scale(0.6);
+      bottom: 3.75rem;
+      left: -2rem;
+    }
+
+    .konami-hint {
+      bottom: 10.75rem;
+      z-index: 12;
+      width: max-content;
+      max-width: calc(100vw - 2rem);
+      padding: 0.1rem 0.35rem;
+      border-radius: 9999px;
+      background: color-mix(in srgb, var(--window-bg) 72%, transparent);
+    }
+
+    .footer {
+      padding: 0.75rem 1rem 1rem;
+      background: color-mix(in srgb, var(--window-bg) 72%, transparent);
+    }
+
+    .konami-controller {
+      width: min(94vw, 360px);
+    }
+
+    .controller-shell {
+      padding: 1rem 1rem 1.25rem;
+      border-radius: 32px 32px 44px 44px;
+    }
+
+    .controller-shell::before,
+    .controller-shell::after {
+      width: 112px;
+      height: 76px;
+      bottom: -11px;
+    }
+
+    .controller-body jpad-controller {
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        "dpad actions";
+      gap: 0.9rem;
+      height: auto !important;
+    }
+
+    .dpad {
+      grid-area: dpad;
+      width: 104px;
+      height: 104px;
+      justify-self: start;
+    }
+
+    .dpad jpad-button {
+      width: 34px;
+      height: 34px;
+    }
+
+    .dpad::before {
+      width: 32px;
+      height: 32px;
+    }
+
+    .controller-center {
+      display: none;
+    }
+
+    .action-buttons {
+      grid-area: actions;
+      justify-self: end;
+      gap: 0.75rem;
+      padding: 0.85rem;
+    }
+
+    .action-buttons jpad-button {
+      width: 46px;
+      height: 46px;
     }
   }
 </style>
